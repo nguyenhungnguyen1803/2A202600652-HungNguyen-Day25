@@ -72,7 +72,23 @@ class RunMetrics(BaseModel):
         3. Write a single-row CSV with csv.DictWriter (import csv at top of file)
         4. Create parent directories if needed
         """
-        raise NotImplementedError("TODO: implement write_csv()")
+        import csv
+        report = self.to_report_dict()
+        
+        # Flatten scenarios
+        scenarios = report.pop("scenarios", {})
+        if isinstance(scenarios, dict):
+            for name, status in scenarios.items():
+                report[f"scenario_{name}"] = status
+                
+        # Create parent directories
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        
+        # Write CSV
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=list(report.keys()))
+            writer.writeheader()
+            writer.writerow(report)
 
 
 def percentile(values: Iterable[float], q: float) -> float:

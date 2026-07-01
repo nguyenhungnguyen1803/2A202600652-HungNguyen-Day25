@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reliability Gateway Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151c2c;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.15);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.15);
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.15);
+            --border: #273549;
+            --border-hover: #3b82f6;
+            --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo-area h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-area span {
+            font-size: 0.8rem;
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            border-color: var(--border-hover);
+            background-color: rgba(59, 130, 246, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .btn-danger {
+            border-color: var(--danger);
+            color: #fca5a5;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-glow);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            transition: border-color 0.2s;
+        }
+
+        .card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Controls styling */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-label span.value {
+            color: var(--primary);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Switch toggles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Query Input Area */
+        .input-wrapper {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-color);
+            font-family: var(--font-family);
+            font-size: 1rem;
+            resize: none;
+            height: 100px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        /* Status Panels */
+        .status-indicators {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .breaker-status-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .breaker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .breaker-name {
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .badge-closed {
+            background-color: var(--success-glow);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-open {
+            background-color: var(--danger-glow);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            animation: pulse-red 2s infinite;
+        }
+
+        .badge-half-open {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .breaker-stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .breaker-stat-value {
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        /* Results Display */
+        .response-container {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.8rem;
+        }
+
+        .metric-badge {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            color: var(--text-muted);
+        }
+
+        .metric-badge strong {
+            color: var(--text-color);
+        }
+
+        .response-text {
+            line-height: 1.6;
+            font-size: 1rem;
+            white-space: pre-wrap;
+        }
+
+        /* Cache details panel */
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 0.2rem;
+        }
+
+        .list-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.8rem;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            transition: all 0.2s;
+        }
+
+        .list-item:hover {
+            border-color: rgba(59, 130, 246, 0.2);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .list-item-query {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .list-item-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        .route-glow {
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+        }
+        .route-primary { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .route-fallback { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .route-cache { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .route-degraded { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <h1>Reliability Gateway <span>Active</span></h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-danger" onclick="resetBreakers()">Reset Breakers</button>
+            <button class="btn" onclick="clearCache()">Clear Cache</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Main panel -->
+        <div class="main-panel">
+            <!-- Settings Card -->
+            <div class="card">
+                <div class="card-title">Cấu hình & Tác vụ</div>
+                
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-label">
+                            Primary Fail Rate: 
+                            <span class="value" id="primary-rate-lbl">25%</span>
+                        </div>
+                        <input type="range" id="primary-rate-input" min="0" max="100" value="25" oninput="updateLbls()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label">
+                            Backup Fail Rate: 
+                            <span class="value" id="backup-rate-lbl">5%</span>
+                        </div>
+                        <input type="range" id="backup-rate-input" min="0" max="100" value="5" oninput="updateLbls()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label">
+                            Similarity Threshold: 
+                            <span class="value" id="similarity-lbl">0.92</span>
+                        </div>
+                        <input type="range" id="similarity-input" min="50" max="100" value="92" oninput="updateLbls()">
+                    </div>
+
+                    <div class="control-group" style="justify-content: space-between; flex-direction: row; align-items: center; height: 100%;">
+                        <span class="control-label">Bật Semantic Cache:</span>
+                        <label class="switch">
+                            <input type="checkbox" id="cache-enable-input" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <textarea id="prompt-input" placeholder="Nhập prompt gửi đến LLM Gateway (ví dụ: 'Hãy tóm tắt chính sách hoàn tiền năm 2026')"></textarea>
+                </div>
+                
+                <button class="btn btn-primary" style="align-self: flex-end; padding: 0.75rem 2rem;" id="send-btn" onclick="sendPrompt()">Gửi Yêu Cầu</button>
+            </div>
+
+            <!-- Response Card -->
+            <div class="card">
+                <div class="card-title">Kết quả phản hồi</div>
+                
+                <div class="response-container">
+                    <div class="response-header" id="res-header">
+                        <div class="metric-badge">Route: <span class="route-glow" id="res-route">-</span></div>
+                        <div class="metric-badge">Provider: <strong id="res-provider">-</strong></div>
+                        <div class="metric-badge">Latency: <strong id="res-latency">-</strong> ms</div>
+                        <div class="metric-badge">Estimated Cost: $<strong id="res-cost">-</strong></div>
+                        <div class="metric-badge">Cache: <strong id="res-cache-hit">-</strong></div>
+                    </div>
+                    <div class="response-text" id="res-text">Nhấn nút "Gửi Yêu Cầu" để kiểm tra hệ thống.</div>
+                </div>
+            </div>
+
+            <!-- Breakers states -->
+            <div class="card">
+                <div class="card-title">Trạng thái Circuit Breakers</div>
+                <div class="status-indicators">
+                    <div class="breaker-status-card">
+                        <div class="breaker-header">
+                            <span class="breaker-name">Primary Breaker</span>
+                            <span class="badge badge-closed" id="breaker-primary-badge">CLOSED</span>
+                        </div>
+                        <div class="breaker-stat-row">
+                            <span>Failure Count (threshold=3):</span>
+                            <span class="breaker-stat-value" id="breaker-primary-failures">0</span>
+                        </div>
+                        <div class="breaker-stat-row">
+                            <span>Success Count (threshold=1):</span>
+                            <span class="breaker-stat-value" id="breaker-primary-successes">0</span>
+                        </div>
+                    </div>
+
+                    <div class="breaker-status-card">
+                        <div class="breaker-header">
+                            <span class="breaker-name">Backup Breaker</span>
+                            <span class="badge badge-closed" id="breaker-backup-badge">CLOSED</span>
+                        </div>
+                        <div class="breaker-stat-row">
+                            <span>Failure Count (threshold=3):</span>
+                            <span class="breaker-stat-value" id="breaker-backup-failures">0</span>
+                        </div>
+                        <div class="breaker-stat-row">
+                            <span>Success Count (threshold=1):</span>
+                            <span class="breaker-stat-value" id="breaker-backup-successes">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar panels -->
+        <div class="side-panel">
+            <!-- Cache List Card -->
+            <div class="card" style="max-height: 450px;">
+                <div class="card-title">Lưu trữ Cache Hiện Tại</div>
+                <div class="list-container" id="cache-list">
+                    <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 2rem 0;">Cache hiện đang trống.</div>
+                </div>
+            </div>
+
+            <!-- Transition Logs Card -->
+            <div class="card" style="max-height: 450px;">
+                <div class="card-title">Lịch Sử Ngắt Mạch</div>
+                <div class="list-container" id="logs-list">
+                    <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 2rem 0;">Chưa ghi nhận chuyển đổi trạng thái nào.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateLbls() {
+            document.getElementById('primary-rate-lbl').innerText = document.getElementById('primary-rate-input').value + '%';
+            document.getElementById('backup-rate-lbl').innerText = document.getElementById('backup-rate-input').value + '%';
+            document.getElementById('similarity-lbl').innerText = (document.getElementById('similarity-input').value / 100).toFixed(2);
+        }
+
+        async function sendPrompt() {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            if (!prompt) return;
+
+            const sendBtn = document.getElementById('send-btn');
+            sendBtn.disabled = true;
+            sendBtn.innerText = 'Đang gọi...';
+
+            const payload = {
+                prompt: prompt,
+                primary_fail_rate: document.getElementById('primary-rate-input').value / 100,
+                backup_fail_rate: document.getElementById('backup-rate-input').value / 100,
+                cache_enabled: document.getElementById('cache-enable-input').checked,
+                similarity_threshold: document.getElementById('similarity-input').value / 100
+            };
+
+            try {
+                const res = await fetch('/api/complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                displayResponse(data);
+                updateDashboard(data);
+            } catch (err) {
+                alert('Có lỗi xảy ra: ' + err.message);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerText = 'Gửi Yêu Cầu';
+            }
+        }
+
+        function displayResponse(data) {
+            document.getElementById('res-text').innerText = data.text;
+            
+            const routeSpan = document.getElementById('res-route');
+            routeSpan.innerText = data.route;
+            routeSpan.className = 'route-glow';
+            
+            if (data.route.startsWith('cache_hit')) {
+                routeSpan.classList.add('route-cache');
+            } else if (data.route === 'primary') {
+                routeSpan.classList.add('route-primary');
+            } else if (data.route === 'fallback') {
+                routeSpan.classList.add('route-fallback');
+            } else {
+                routeSpan.classList.add('route-degraded');
+            }
+
+            document.getElementById('res-provider').innerText = data.provider || 'N/A';
+            document.getElementById('res-latency').innerText = data.latency_ms;
+            document.getElementById('res-cost').innerText = data.estimated_cost;
+            document.getElementById('res-cache-hit').innerText = data.cache_hit ? 'HIT' : 'MISS';
+        }
+
+        function updateDashboard(data) {
+            // Update Breakers
+            for (const [name, state] of Object.entries(data.breakers)) {
+                const badge = document.getElementById(`breaker-${name}-badge`);
+                badge.innerText = state.state;
+                badge.className = `badge badge-${state.state.toLowerCase().replace('_', '-')}`;
+
+                document.getElementById(`breaker-${name}-failures`).innerText = state.failure_count;
+                document.getElementById(`breaker-${name}-successes`).innerText = state.success_count;
+            }
+
+            // Update Cache List
+            const cacheContainer = document.getElementById('cache-list');
+            if (data.cached_keys.length === 0) {
+                cacheContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 2rem 0;">Cache hiện đang trống.</div>`;
+            } else {
+                cacheContainer.innerHTML = data.cached_keys.map(key => `
+                    <div class="list-item">
+                        <div class="list-item-query">${key}</div>
+                    </div>
+                `).join('');
+            }
+
+            // Update Logs List
+            const logsContainer = document.getElementById('logs-list');
+            const logs = [];
+            for (const [name, state] of Object.entries(data.breakers)) {
+                state.transition_log.forEach(log => {
+                    logs.push({
+                        name: name,
+                        from: log.from,
+                        to: log.to,
+                        reason: log.reason,
+                        ts: log.ts
+                    });
+                });
+            }
+            // Sort log entries descending by timestamp
+            logs.sort((a, b) => b.ts - a.ts);
+
+            if (logs.length === 0) {
+                logsContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 2rem 0;">Chưa ghi nhận chuyển đổi trạng thái nào.</div>`;
+            } else {
+                logsContainer.innerHTML = logs.map(log => `
+                    <div class="list-item">
+                        <div class="list-item-query" style="color: var(--warning);">${log.name.toUpperCase()} Breaker</div>
+                        <div class="list-item-meta">
+                            <span>${log.from} &rarr; ${log.to}</span>
+                            <span>${log.reason}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function resetBreakers() {
+            if (!confirm('Bạn có muốn reset lại toàn bộ bộ ngắt mạch không?')) return;
+            const res = await fetch('/api/breakers/reset', { method: 'POST' });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert('Đã reset trạng thái Circuit Breakers.');
+                location.reload();
+            }
+        }
+
+        async function clearCache() {
+            if (!confirm('Bạn có muốn xóa toàn bộ cache không?')) return;
+            const res = await fetch('/api/cache/clear', { method: 'POST' });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert('Đã dọn dẹp cache.');
+                location.reload();
+            }
+        }
+
+        // Initialize values
+        updateLbls();
+    </script>
+</body>
+</html>
